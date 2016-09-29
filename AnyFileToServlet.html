@@ -1,0 +1,112 @@
+<html>
+    <head>
+    	<title>FileBox</title>
+        <script src="http://code.jquery.com/jquery-1.10.2.js"></script>
+        <script src="http://code.jquery.com/ui/1.11.3/jquery-ui.js"></script>
+    </head>
+    <body>
+        
+       <!--  <object width="100%" height="400" data="" id="obj"></object> <!-- to display content on webpage -->
+        <div>
+            <input type="hidden" id="uploadTextValue" name="uploadTextValue" value="" />
+            <input id="uploadText" style="width:180px" type="file"   onchange="PreviewText();" />
+        </div>
+        <!--  <a href="#" id="viewSource">Source file</a>-->
+        
+        <script>
+            function PreviewText() {
+            var oFReader = new FileReader();
+            //readAsText, not readAsDataURL
+            oFReader.readAsDataURL(document.getElementById("uploadText").files[0]);
+            oFReader.onload = function (oFREvent) {
+                document.getElementById("uploadTextValue").value = oFREvent.target.result; 
+                //document.getElementById("obj").data = oFREvent.target.result;
+                sendToServlet(document.getElementById("uploadTextValue").value);
+            };
+        };
+       
+        </script>
+        
+        <script>
+        
+    
+
+
+
+function sendToServlet(data) {
+			//alert(data);
+			
+			var url = "../dummy";
+			var params = "Src=Image&data="+data;
+			//alert("Pagenumber is "+pageNumber);
+			var xmlHttpRequest = getXMLHttpRequest(); 
+			xmlHttpRequest.open("POST", url, true);
+
+	xmlHttpRequest.onreadystatechange = getResponse(xmlHttpRequest);
+	xmlHttpRequest.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+	xmlHttpRequest.send(params);
+
+
+}
+/*
+ * Returns a function that waits for the state change in XMLHttpRequest
+ */
+function getResponse(xmlHttpRequest) {//why is pageNumber here ??
+
+	// an anonymous function returned
+		// it listens to the XMLHttpRequest instance
+		return function() {
+			if (xmlHttpRequest.readyState == 4) {
+				if (xmlHttpRequest.status == 200) {
+					var data = xmlHttpRequest.responseText;//receives from servlet without redirect
+					//var jsonData = JSON.parse(data);//data now holds the whole json as a string and jsonData as the object
+							
+							
+					
+				} else {
+					alert("HTTP error " + xmlHttpRequest.status + ": "+ xmlHttpRequest.statusText);
+				}
+			}
+		};
+	}
+
+/*
+ * creates a new XMLHttpRequest object which is the backbone of AJAX,
+ * or returns false if the browser doesn't support it
+ */
+ //The XMLHttpRequest object is used to exchange data with a server.
+function getXMLHttpRequest() {
+	var xmlHttpReq = false;
+	// to create XMLHttpRequest object in non-Microsoft browsers
+	if (window.XMLHttpRequest) {
+		xmlHttpReq = new XMLHttpRequest();
+	} else if (window.ActiveXObject) {
+		try {
+			// to create XMLHttpRequest object in later versions
+			// of Internet Explorer
+			xmlHttpReq = new ActiveXObject("Msxml2.XMLHTTP");
+		} catch (exp1) {
+			try {
+				// to create XMLHttpRequest object in older versions
+				// of Internet Explorer
+				xmlHttpReq = new ActiveXObject("Microsoft.XMLHTTP");
+			} catch (exp2) {
+				xmlHttpReq = false;
+			}
+		}
+	}
+	return xmlHttpReq;
+}
+        
+        </script>
+        
+    </body>
+</html>
+        
+        </script>
+        
+    </body>
+</html>
+
+
+
