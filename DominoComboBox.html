@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>HTTP-Req-Test</title>
+
+    <link rel="stylesheet" type="text/css" href="../css/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../css/icon.css">
+    <script type="text/javascript" src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/jquery.easyui.min.js"></script>
+    
+    
+</head>
+<body>
+
+
+<div style="margin:20px 0"></div>
+Region<input class="easyui-combobox" id="cc1" style="width:150px" data-options="url:'../combobox',panelHeight:'auto',textField:'Region',valueField:'Region'"/>
+Country<input class="easyui-combobox" id="cc2" style="width:150px" data-options="panelHeight:'auto',textField:'Country',valueField:'Country'"/>
+ State <input class="easyui-combobox" id="cc3" style="width:150px" data-options="panelHeight:'auto',textField:'State',valueField:'State'"/>
+	<!-- Note that the json needed to populate ta combobox SHOULD NOT have Total -->
+<!-- <input class="easyui-combobox" id="cc2" style="width:150px"	url="datagrid_data.txt"	valueField="GEID" textField="GEID"/>-->
+  
+
+
+<script type="text/javascript">
+$(document).ready(function()
+	{ 
+	
+	$('#cc1').combobox({
+	onSelect:function(record){
+	//$('#cc2').combobox('reload',"../combobox?Region=B");
+	giveRegion();
+					
+	
+	}
+});
+$('#cc2').combobox({
+	onSelect:function(record){
+	//$('#cc2').combobox('reload',"../combobox?Region=B");
+	giveCountry();
+					
+	
+	}
+});
+
+			
+});
+	</script>
+
+
+<script>
+
+ function giveRegion()
+ {
+ 	var url = "../combobox";
+	var params = "Region="+$('#cc1').combobox('getValue')+"&Country=&State=";
+	alert(params);
+	var xmlHttpRequest = getXMLHttpRequest(); 
+	xmlHttpRequest.open("POST", url, true);
+	
+	xmlHttpRequest.onreadystatechange = getCountryResponse(xmlHttpRequest);
+	xmlHttpRequest.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+	xmlHttpRequest.send(params);
+ 
+ }
+ function giveCountry()
+ {
+ 	var url = "../combobox";
+	var params = "Region="+$('#cc1').combobox('getValue')+"&Country="+$('#cc2').combobox('getValue')+"&State=";
+	alert(params);
+	var xmlHttpRequest = getXMLHttpRequest(); 
+	xmlHttpRequest.open("POST", url, true);
+	
+	xmlHttpRequest.onreadystatechange = getStateResponse(xmlHttpRequest);
+	xmlHttpRequest.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+	xmlHttpRequest.send(params);
+ 
+ }
+
+function getStateResponse(xmlHttpRequest) {
+
+	// an anonymous function returned
+		// it listens to the XMLHttpRequest instance
+		return function() {
+			if (xmlHttpRequest.readyState == 4) {
+				if (xmlHttpRequest.status == 200) {
+					var data = xmlHttpRequest.responseText;//receives from servlet without redirect
+					//var jsonData = JSON.parse(data);//data now holds the whole json as a string and jsonData as the object
+					alert("State:"+data);		
+					//var CntrySel="../combobox?Region="+$('#cc1').combobox('getValue')+"&Country=";
+					var StateSel="../combobox?Region="+$('#cc1').combobox('getValue')+"&Country="+$('#cc2').combobox('getValue')+"";
+					//$('#cc2').combobox('reload',CntrySel);//Never Reload without arg as it resends blank request	
+					$('#cc3').combobox('reload', StateSel);			
+					
+				} 
+				else {
+					alert("HTTP error " + xmlHttpRequest.status + ": "+ xmlHttpRequest.statusText);
+				}
+			}
+		};
+	}
+function getCountryResponse(xmlHttpRequest) {
+
+	// an anonymous function returned
+		// it listens to the XMLHttpRequest instance
+		return function() {
+			if (xmlHttpRequest.readyState == 4) {
+				if (xmlHttpRequest.status == 200) {
+					var data = xmlHttpRequest.responseText;//receives from servlet without redirect
+					var jsonData = JSON.parse(data);//data now holds the whole json as a string and jsonData as the object
+					alert("Country :"+data);		
+					var CntrySel="../combobox?Region="+$('#cc1').combobox('getValue')+"&Country="+$('#cc2').combobox('getValue');
+					
+					//var StateSel="../combobox?Region="+$('#cc1').combobox('getValue')+"&Country="+$('#cc2').combobox('getValue');
+					$('#cc2').combobox('reload', CntrySel);//Never Reload without arg as it resends blank request	
+					//$('#cc3').combobox('reload', StateSel);			
+					
+				} 
+				else {
+					alert("HTTP error " + xmlHttpRequest.status + ": "+ xmlHttpRequest.statusText);
+				}
+			}
+		};
+	}
+
+function getResponse(xmlHttpRequest) {
+
+	// an anonymous function returned
+		// it listens to the XMLHttpRequest instance
+		return function() {
+			if (xmlHttpRequest.readyState == 4) {
+				if (xmlHttpRequest.status == 200) {
+					var data = xmlHttpRequest.responseText;//receives from servlet without redirect
+					var jsonData = JSON.parse(data);//data now holds the whole json as a string and jsonData as the object
+					alert(data);		
+					var CntrySel="../combobox?Region="+$('#cc1').combobox('getValue');
+					var StateSel="../combobox?Region="+$('#cc1').combobox('getValue')+"&Country="+$('#cc2').combobox('getValue');
+					//$('#cc3').combobox('loadData', data);
+					$('#cc2').combobox('reload', CntrySel);//Never Reload without arg as it resends blank request	
+					$('#cc3').combobox('reload', StateSel);			
+					//$('#cc2').combobox('loadData', "[{'Country':'A1'},{'Country':'A2'}]");
+					
+				} 
+				else {
+					alert("HTTP error " + xmlHttpRequest.status + ": "+ xmlHttpRequest.statusText);
+				}
+			}
+		};
+	}
+
+/*
+ * creates a new XMLHttpRequest object which is the backbone of AJAX,
+ * or returns false if the browser doesn't support it
+ */
+ //The XMLHttpRequest object is used to exchange data with a server.
+function getXMLHttpRequest() {
+	var xmlHttpReq = false;
+	// to create XMLHttpRequest object in non-Microsoft browsers
+	if (window.XMLHttpRequest) {
+		xmlHttpReq = new XMLHttpRequest();
+	} else if (window.ActiveXObject) {
+		try {
+			// to create XMLHttpRequest object in later versions
+			// of Internet Explorer
+			xmlHttpReq = new ActiveXObject("Msxml2.XMLHTTP");
+		} catch (exp1) {
+			try {
+				// to create XMLHttpRequest object in older versions
+				// of Internet Explorer
+				xmlHttpReq = new ActiveXObject("Microsoft.XMLHTTP");
+			} catch (exp2) {
+				xmlHttpReq = false;
+			}
+		}
+	}
+	return xmlHttpReq;
+}
+	
+</script>
+
+
+</body>
+</html>
+
