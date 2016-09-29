@@ -1,0 +1,199 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Test TreeGrid</title>
+    <link rel="stylesheet" type="text/css" href="../css/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../css/icon.css">
+    
+    <script type="text/javascript" src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/jquery.easyui.min.js"></script>
+</head>
+<body onload="getRoot();">
+   <center>
+    <div style="margin:60px 0;"></div>
+    
+ 	 <table id="tg" title="Treegrid 2" iconCls="icon" class="easyui-treegrid" style="width:500px;height:'auto'" data-options=" method: 'post',
+                rownumbers: false, lines:'true',        idField: 'id',   treeField: 'name'"><!-- Never insert URL -->
+        <thead>
+            <tr>
+                <th data-options="field:'name'" width="0">Name</th><!-- width 0 for Autofit -->
+                <th data-options="field:'size'" width="100" align="right">Size (String)</th>
+                <th data-options="field:'date'" width="150">Date (String)</th>
+            </tr>
+        </thead>
+    </table>
+    
+    <script>
+    var lev=1;//global
+    $('#tg').treegrid({
+
+	
+	
+	onBeforeExpand:function(row)//don't use onExpand
+	{	
+		$('#tg').treegrid('select',row.id);	
+		//alert("name is"+row.name+" & id is"+row.id);
+		//row.name is the value
+		//row.id is row number
+		var oldChild=$('#tg').treegrid('getChildren',row.id);
+		var level=$('#tg').treegrid('getLevel', row.id);
+		//alert("oldChild=" +oldChild);
+		//alert("level is "+$('#tg').treegrid('getLevel', row.id));
+		if(oldChild=="")
+		{
+				getChild(row.name,row,(level+1));//populate with next level only if the data hasn't been added before
+				$('#w').window('open');
+		}
+		else
+		{
+			//alert("populated");
+		}
+		//$('#w').window('open');
+	}
+});
+    
+    function getChild(parent,row,level) {
+
+		//alert("inGetchild : parent=" +parent);
+			var url = "../tree";
+			var params = "Src=Local&level="+level;
+			//alert("Pagenumber is "+pageNumber);
+			var xmlHttpRequest = getXMLHttpRequest(); 
+			xmlHttpRequest.open("POST", url, true);
+
+	xmlHttpRequest.onreadystatechange = getChildResponse(xmlHttpRequest,row);
+	xmlHttpRequest.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+	xmlHttpRequest.send(params);
+
+
+}
+
+ function getRoot() {
+
+		//alert("inGetchild : parent=" +parent);
+			var url = "../tree";
+			var params = "Src=Local&level="+1;
+			//alert("Pagenumber is "+pageNumber);
+			var xmlHttpRequest = getXMLHttpRequest(); 
+			xmlHttpRequest.open("POST", url, true);
+
+	xmlHttpRequest.onreadystatechange = getRootResponse(xmlHttpRequest);
+	xmlHttpRequest.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+	xmlHttpRequest.send(params);
+
+
+}
+
+function getRootResponse(xmlHttpRequest) {//why is pageNumber here ??
+
+	// an anonymous function returned
+		// it listens to the XMLHttpRequest instance
+		return function() {
+			if (xmlHttpRequest.readyState == 4) {
+				if (xmlHttpRequest.status == 200) {
+					var data = xmlHttpRequest.responseText;//receives from servlet without redirect
+					var jsonData = JSON.parse(data);//data now holds the whole json as a string and jsonData as the object
+					
+					//alert("Root data loaded");
+					$('#tg').treegrid('loadData', jsonData);
+					
+							
+					
+				} else {
+					alert("HTTP error " + xmlHttpRequest.status + ": "+ xmlHttpRequest.statusText);
+				}
+			}
+		};
+	}
+/*
+ * Returns a function that waits for the state change in XMLHttpRequest
+ */
+function getChildResponse(xmlHttpRequest,row)
+ {
+
+	// an anonymous function returned
+		// it listens to the XMLHttpRequest instance
+		return function() {
+		//alert("in getchildresp");
+			if (xmlHttpRequest.readyState == 4) {
+				if (xmlHttpRequest.status == 200) {
+					var data = xmlHttpRequest.responseText;//receives from servlet without redirect
+					
+		
+					//alert("Children on UI:  "+data);
+					var jsonData = JSON.parse(data);//data now holds the whole json as a string and jsonData has the syntax object
+					//alert("level in response="+level);
+					
+													
+					
+					var node = $('#tg').treegrid('getSelected');
+					//alert(jsonData);
+					$('#w').window('close');
+					$('#tg').treegrid('append',{
+					//Attention: ID field is always an integer
+					parent: node.id,  // the node has a 'id' value that defined through 'idField' property
+					data:jsonData
+					});
+					
+					if(data!="[]")//reopen parent if it has children
+					{
+						$('#tg').treegrid('collapse',row.id);
+						$('#tg').treegrid('expand',row.id);
+					}
+					else
+					{
+					$('#tg').treegrid('collapse',row.id);
+					$.messager.show({
+               				 title:'Attention !',
+               				 closable:'false',
+               				 msg:'No children in this query',
+              				  timeout:2000,
+                			showType:'fade',
+                			style:{
+                			    right:'',
+                			    bottom:''
+             				   }
+          			  });
+					
+					}
+				
+					
+							
+					
+				} else {
+					alert("HTTP error " + xmlHttpRequest.status + ": "+ xmlHttpRequest.statusText);
+				}
+			}
+		};
+	}
+	
+	function getXMLHttpRequest() {
+	var xmlHttpReq = false;
+	// to create XMLHttpRequest object in non-Microsoft browsers
+	if (window.XMLHttpRequest) {
+		xmlHttpReq = new XMLHttpRequest();
+	} else if (window.ActiveXObject) {
+		try {
+			// to create XMLHttpRequest object in later versions
+			// of Internet Explorer
+			xmlHttpReq = new ActiveXObject("Msxml2.XMLHTTP");
+		} catch (exp1) {
+			try {
+				// to create XMLHttpRequest object in older versions
+				// of Internet Explorer
+				xmlHttpReq = new ActiveXObject("Microsoft.XMLHTTP");
+			} catch (exp2) {
+				xmlHttpReq = false;
+			}
+		}
+	}
+	return xmlHttpReq;
+}
+    
+</script>
+
+</body>
+</html>
+
