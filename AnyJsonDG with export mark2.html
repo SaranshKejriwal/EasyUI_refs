@@ -1,0 +1,117 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+     <title>Any JSON Datagrid</title>
+    <script type="text/javascript" src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/jquery.easyui.min.js"></script>
+     <link rel="stylesheet" type="text/css" href="../css/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../css/icon.css">
+</head>
+<body >
+<form id="form" action="../dyna" method="post">
+	<input type="hidden" name="Src" value="makeDynamicDG">
+	<input type="hidden" name="exportType" value="Excel">
+	<input type="submit" value="Excel/CSV" id="makeTable" />
+        </form>
+       <form id="form" action="../dyna" method="post">
+	<input type="hidden" name="Src" value="makeDynamicDG">
+	<input type="hidden" name="exportType" value="xml">
+	<input type="submit" value="XML" id="makeTable" />
+        </form>
+          <form id="form" action="../dyna" method="post">
+	<input type="hidden" name="Src" value="makeDynamicDG">
+	<input type="hidden" name="exportType" value="txt">
+	<input type="submit" value="txt" id="makeTable" />
+        </form>
+        
+        <button onclick="makeDynamicDG();">Load DG</button>
+       <div id="dynaText"><!-- this div will be cleared and remade using innerHTML everytime Servlet is called -->
+       </div>
+ <script>
+ 
+ function makeDynamicDG()
+ {
+ 	//alert("About to clear div");
+	document.getElementById("dynaText").innerHTML="";//clear old table before adding new table
+ 	var url = "../dyna";
+ 	var urlFile=window.location.protocol + "//" + window.location.host + "/giwcrud/webpages";
+ 	//alert(urlFile);
+ 	var params = "Src=makeDynamicDG&exportType=text/html";
+	//alert(params);
+	var xmlHttpRequest = getXMLHttpRequest(); 
+	xmlHttpRequest.open("POST", url, true);
+	xmlHttpRequest.onreadystatechange = getResponse(xmlHttpRequest);
+	xmlHttpRequest.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+	xmlHttpRequest.send(params);
+ 
+ }
+
+
+function getResponse(xmlHttpRequest) {
+
+	// an anonymous function returned
+		// it listens to the XMLHttpRequest instance
+		return function() {
+			if (xmlHttpRequest.readyState == 4) {
+				if (xmlHttpRequest.status == 200) {
+					document.getElementById("dynaText").innerHTML="<table id='dgCB' title='AnyJsonDG'><thead><tr id='dgCBHead'></tr></thead></table>";//create a blank table in dynaText
+					//EasyUI DG doesn't allow add/delete columns. In case a new query is fetched, we need to clear the table
+					var data = xmlHttpRequest.responseText;
+					var jsonData = JSON.parse(data);//data now holds the whole json as a string and jsonData as the object
+					var row = document.getElementById("dgCBHead");//header of DG to populate
+					for(var key in jsonData.rows[0])//pull all keys in 1st object
+					{
+						//Breakthrough function of the code
+						var newTH = document.createElement('th');
+						row.appendChild(newTH);
+						newTH.innerHTML = key;//set header name
+						newTH.id= key;
+						newTH.setAttribute("field",key);//this is a crucial step so that EasyUI loadData() can work
+					}
+										
+					$('#dgCB').datagrid();		
+					$('#dgCB').datagrid("loadData",jsonData.rows);//once we have headers with fields, we can load the data
+					alert(jsonData.total);
+				
+				} 
+				else {
+					alert("HTTP error " + xmlHttpRequest.status + ": "+ xmlHttpRequest.statusText);
+				}
+			}
+		};
+	}
+
+/*
+ * creates a new XMLHttpRequest object which is the backbone of AJAX,
+ * or returns false if the browser doesn't support it
+ */
+ //The XMLHttpRequest object is used to exchange data with a server.
+function getXMLHttpRequest() {
+	var xmlHttpReq = false;
+	// to create XMLHttpRequest object in non-Microsoft browsers
+	if (window.XMLHttpRequest) {
+		xmlHttpReq = new XMLHttpRequest();
+	} else if (window.ActiveXObject) {
+		try {
+			// to create XMLHttpRequest object in later versions
+			// of Internet Explorer
+			xmlHttpReq = new ActiveXObject("Msxml2.XMLHTTP");
+		} catch (exp1) {
+			try {
+				// to create XMLHttpRequest object in older versions
+				// of Internet Explorer
+				xmlHttpReq = new ActiveXObject("Microsoft.XMLHTTP");
+			} catch (exp2) {
+				xmlHttpReq = false;
+			}
+		}
+	}
+	return xmlHttpReq;
+}
+ </script>
+   
+</body>
+</html>
+
+
