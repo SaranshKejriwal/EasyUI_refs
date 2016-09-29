@@ -1,0 +1,170 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>DynaDG using CheckBox</title>
+   
+   
+    <script type="text/javascript" src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/jquery.easyui.min.js"></script>
+     <link rel="stylesheet" type="text/css" href="../css/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../css/icon.css">
+</head>
+<body >
+    
+      <div style="margin:20px 0;"></div>
+    
+    <input type="checkbox" name="cb" value="cb1" />cb1
+     <input type="checkbox" name="cb" value="cb2" />cb2
+      <input type="checkbox" name="cb" value="cb3" />cb3
+       <input type="checkbox" name="cb" value="cb4" />cb4
+       <button id="makeTable" onclick="makeHeader();" >Make Header</button>
+       <button id="makeTable" onclick="makeDynamicDG();" >Load DG</button>
+    
+   <!--  <table class="easyui-datagrid" id="dg" title="Edit" style="width:700px;height:auto"
+            data-options="
+               
+                singleSelect: true,
+               
+                method:'post'
+            ">
+            
+        <thead>
+            <tr>
+                <th data-options="field:'id',width:80">ID</th>
+                <th data-options="field:'name',width:100,editor:'text'">Product</th>
+                <th data-options="field:'status',width:60,align:'center',editor:'text'">Status</th>
+                <th data-options="field:'listprice',width:80,align:'right',editor:{type:'numberbox',options:{precision:1}}">Price</th>
+                <th data-options="field:'unitcost',width:80,align:'right',editor:'numberbox'">Unit Cost</th>
+                <th data-options="field:'attr1',width:250,editor:'text'">Attribute</th>
+                <th data-options="field:'Check',width:60,align:'center',editor:{type:'checkbox',options:{on:'Y',off:'N'}}">Check</th>
+            </tr>
+        </thead>
+        <tbody>
+       
+        </tbody>
+    </table>-->
+     <table id="dgCB" class="easyui-datagrid">
+            
+        <thead>
+            <tr id="dgCBHead">
+             <th field="cb1">CB1</th>
+            </tr>
+        </thead>
+        <tbody>
+       
+        </tbody>
+    </table>
+    <script>
+    function makeHeader()
+    {
+  	  var checkboxes = document.getElementsByName("cb");
+  	
+   var row = document.getElementById("dgCBHead");
+   
+   	for (var r=row.cells.length-1; r>-1; r--) //clear the whole row
+   	 {
+   	 	if(row.cells.length)
+   	 	{
+   	 		row.deleteCell(r);	
+   	 	}
+   	 }
+   	 
+   	 
+   for (var h=0; h<checkboxes.length; h++) 
+    {
+	
+       	if(checkboxes[h].checked)
+    		{
+    			
+					var newTH = document.createElement('th');
+					row.appendChild(newTH);
+					newTH.innerHTML = checkboxes[h].value;
+					newTH.field = checkboxes[h].value;//for Datagrid
+				    			//addColumn(checkboxes,h);
+    		}		
+		
+		
+	} 
+  	 //$('#dgCB').datagrid();
+           
+    }
+    
+    </script>
+ <script>
+ 
+ function makeDynamicDG()
+ {
+ 	var url = "../dummy";
+	var params = "Src=makeDynamicDG";
+	//alert(params);
+	var xmlHttpRequest = getXMLHttpRequest(); 
+	xmlHttpRequest.open("POST", url, true);
+	
+	xmlHttpRequest.onreadystatechange = getResponse(xmlHttpRequest);
+	xmlHttpRequest.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+	xmlHttpRequest.send(params);
+ 
+ }
+
+
+function getResponse(xmlHttpRequest) {
+
+	// an anonymous function returned
+		// it listens to the XMLHttpRequest instance
+		return function() {
+			if (xmlHttpRequest.readyState == 4) {
+				if (xmlHttpRequest.status == 200) {
+					var data = xmlHttpRequest.responseText;//receives from servlet without redirect
+					var jsonData = JSON.parse(data);//data now holds the whole json as a string and jsonData as the object
+					// 
+					alert(data);
+					$('#dgCB').datagrid();		
+					$('#dgCB').datagrid("loadData",jsonData);
+				
+										
+					
+				} 
+				else {
+					alert("HTTP error " + xmlHttpRequest.status + ": "+ xmlHttpRequest.statusText);
+				}
+			}
+		};
+	}
+
+/*
+ * creates a new XMLHttpRequest object which is the backbone of AJAX,
+ * or returns false if the browser doesn't support it
+ */
+ //The XMLHttpRequest object is used to exchange data with a server.
+function getXMLHttpRequest() {
+	var xmlHttpReq = false;
+	// to create XMLHttpRequest object in non-Microsoft browsers
+	if (window.XMLHttpRequest) {
+		xmlHttpReq = new XMLHttpRequest();
+	} else if (window.ActiveXObject) {
+		try {
+			// to create XMLHttpRequest object in later versions
+			// of Internet Explorer
+			xmlHttpReq = new ActiveXObject("Msxml2.XMLHTTP");
+		} catch (exp1) {
+			try {
+				// to create XMLHttpRequest object in older versions
+				// of Internet Explorer
+				xmlHttpReq = new ActiveXObject("Microsoft.XMLHTTP");
+			} catch (exp2) {
+				xmlHttpReq = false;
+			}
+		}
+	}
+	return xmlHttpReq;
+}
+ </script>
+   
+</body>
+</html>
+
+
+
