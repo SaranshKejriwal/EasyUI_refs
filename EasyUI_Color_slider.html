@@ -1,0 +1,64 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Colour Slider</title>
+    <link rel="stylesheet" type="text/css" href="../css//easyui.css">
+    <link rel="stylesheet" type="text/css" href="../css/icon.css">
+   
+    <script type="text/javascript" src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/jquery.easyui.min.js"></script>
+    <style>
+    body { 
+    background-color: transparent;
+    
+		}
+    </style>
+</head>
+<body>
+      
+    <div style="margin:20px 0 50px 0;"></div>
+   Red<input id="R" value="255" class="easyui-slider"   style="width:510px"
+        data-options="min:0,max:255,showTip:true,rule:[0,'|',64,'|',127,'|',191,'|',255],onChange:function(v){getcol();}"><br><br>
+   
+   Green<br><input id="G" value="255" class="easyui-slider" value="0"  style="width:510px"
+        data-options="min:0,max:255,showTip:true,rule:[0,'|',64,'|',127,'|',191,'|',255],onChange:function(v){getcol();}" ><br><br>
+        
+   Blue<br><input id="B" value="255" class="easyui-slider" value="0"  style="width:510px"
+        data-options="min:0,max:255,showTip:true,rule:[0,'|',64,'|',127,'|',191,'|',255],onChange:function(v){getcol();}" ><br><br>
+        
+              
+        Colour Code: <input type="text" id="colr" readonly style="font-size:20px;"><br>
+        
+        <div id="divid" style="border-style: solid;border-width:0px;margin:0px;"><p><br><br><br><br></p></div>
+        
+        
+</body>
+<script type="text/javascript">
+
+		
+		
+	
+function getcol()
+{
+	var r=$('#R').slider('getValue');
+	var g=$('#G').slider('getValue');
+	var b=$('#B').slider('getValue');
+	var rhex=r.toString(16);
+	var ghex=g.toString(16);
+	var bhex=b.toString(16);
+	if(rhex.length<2){rhex="0"+rhex;}
+	if(ghex.length<2){ghex="0"+ghex;}
+	if(bhex.length<2){bhex="0"+bhex;}
+	var col="#"+rhex+ghex+bhex;
+	//alert("Rhex="+rhex+"\nGhex="+ghex+"\nBhex="+bhex+"\ncol="+col);
+	document.getElementById("colr").value=col;
+	var d=document.getElementById("divid");
+	d.style.backgroundColor=col
+	//document.body.style.backgroundColor =col;
+}
+</script>
+</html>
+
+
