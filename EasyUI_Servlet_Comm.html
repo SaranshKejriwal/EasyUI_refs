@@ -1,0 +1,631 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Editable datagrid</title>
+    <link rel="stylesheet" type="text/css" href="../css/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../css/icon.css">
+   <!--   <link rel="stylesheet" type="text/css" href="demo.css">-->
+   
+   <script type="text/javascript" src="../scripts/jquery-1.7.2.min.js?o"></script>
+   
+   <!--  <script type="text/javascript" src="../js/jquery.min.js"></script>-->
+    <script type="text/javascript" src="../js/jquery.easyui.min.js"></script>
+    	<script type="text/javascript" src="../js/jquery.edatagrid.js"></script>
+    	
+	
+    
+</head>
+<body onload="initialRequest0();"><!-- initialize pagination -->
+    
+ <center>
+ <div id="dlg_search" title="Search Record" class="easyui-panel" style="width:980px;height:280px;padding:10px 20px" closed="true" collapsed="true" closable="true" iconCls="icon" collapsible="true">
+		
+		<form id="fm_search" name="fm_search" >
+			<div class="fitem"><label>GEID&nbsp&nbsp&nbsp</label><input id="idS" name="idS" class="easyui-textbox" data-options="onChange:function(v1,v2){checkLen(this.id);}"></div>
+			<div class="fitem"><label>User ID&nbsp</label><input id="userIDS" name="userIDS" class="easyui-textbox" data-options="onChange:function(v1,v2){checkLen(this.id);}"></div>
+			<div class="fitem"><label>First Name</label><input  id="name_FS" name="name_FS" class="easyui-combobox" data-options="panelHeight:'auto',loader: myloader,
+                mode:'remote',valueField: 'name_F',textField: 'name_F'"></div>
+            <div class="fitem"><label>Last Name</label><input  id="name_LS" name="name_LS" class="easyui-combobox" data-options="panelHeight:'auto',loader: myloader2,
+              mode:'remote',valueField: 'name_F',textField: 'name_F'"></div>
+			
+			<!--  <div class="fitem"><label>Last Name Text</label><input  id="name_LS2" name="name_LS2" class="easyui-textbox" data-options="onChange:function(v1,v2){checkLen(this.id);}"></div>-->
+			<div class="fitem"><label>SIP Location</label><input  id="SIP_LocS" name="SIP_LocS" class="easyui-textbox" data-options="onChange:function(v1,v2){checkLen(this.id);}"></div>
+			<div class="fitem"><label>SIP Unit&nbsp</label><input id="SIP_UnitS" name="SIP_UnitS" class="easyui-textbox" data-options="onChange:function(v1,v2){checkLen(this.id);}"></div>
+			<div class="fitem"><label>Group Name</label><input id="groupNameS" name="groupNameS" class="easyui-textbox" data-options="onChange:function(v1,v2){checkLen(this.id);}"></div>
+			<div class="fitem"><label>Status&nbsp</label><input id="statusS" name="statusS" class="easyui-textbox" data-options="onChange:function(v1,v2){checkLen(this.id);}"></div>
+			
+			
+			<center><a href="javascript:void(0)" class="easyui-linkbutton c6" iconCls="icon-search" onclick="searchQ()" style="width:90px">Search</a>
+		</form>
+	</div>
+   <div id="main_datagrid">
+  <table id="dg"  class="easyui-datagrid" title=" DB" style="width:522px;height:450px" 
+			toolbar="#toolbar" pagination="false" idField="id"
+			rownumbers="true" singleSelect="true" data-options="singleSelect:true,fitColumns:true,collapsible:true,rownumbers: true ">
+			<!-- idField IS NOT cleared in case we delete a record, Note that when idField is read by Servlet, it is looking for getParameter("id"), not field name in idField -->
+		<thead>
+			<tr>
+				<th field="id" width="0" editor="{type:'text',options:{required:true}}" sortable="true">GEID</th>
+				<th field="userID" width="0" sortable="true">User ID</th>
+				<th field="name_F" width="0" editor="{type:'validatebox',options:{required:true}}" sortable="true">First Name</th>
+				<th field="name_L" width="0" editor="{type:'validatebox',options:{required:true}}">Last Name</th>
+				<th field="SIP_Loc" width="0" editor="text" sortable="true">SIP Location</th>
+				<th field="SIP_Unit" width="0" editor="text">SIP Unit</th>
+				<th field="groupName" width="0" editor="text">Group</th>
+				<th field="status" width="0" editor="text">Status</th>
+				<th data-options="field:'oldID',width:1,align:'left'" class="oldID" field="oldID"  style="display:none;" hidden="true"></th>
+				<!-- <th data-options="field:'action',width:1,align:'left'" class="action" field="action"  style="display:none;" hidden="true"></th>-->
+				
+			</tr>
+		</thead>
+	</table>
+	</div>
+		
+	<div id="toolbar">
+		<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-add2" plain="true" onclick="newUser()">New Record</a>
+		<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="editUser()">Update Record</a>
+		<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove2" plain="true" onclick="cnfRemove()">Remove Record</a>
+		<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-search" plain="true" onclick="searchrec()">Search</a>
+	</div>
+           
+    
+    <div id="dlg" class="easyui-dialog" style="width:400px;height:320px;padding:10px 20px"
+			closed="true" buttons="#dlg-buttons">
+		<div class="ftitle">User Information</div>
+		<form id="fm" name="fm">
+			<div class="fitem"><label>GEID&nbsp&nbsp&nbsp</label><input id="id" name="id" class="easyui-textbox" required="true"></div><br>
+			<div class="fitem"><label>User ID&nbsp</label><input id="userID" name="userID" class="easyui-textbox"></div>
+			<div class="fitem"><label>First Name</label><input id="name_F" name="name_F" class="easyui-textbox" required="true"></div>
+			<div class="fitem"><label>Last Name</label><input id="name_L" name="name_L" class="easyui-textbox" required="true"></div>
+			<div class="fitem"><label>SIP Location</label><input id="SIP_Loc" name="SIP_Loc" class="easyui-textbox"></div>
+			<div class="fitem"><label>SIP Unit&nbsp</label><input id="SIP_Unit" name="SIP_Unit" class="easyui-textbox"></div>
+			<div class="fitem"><label>Group Name</label><input id="groupName" name="groupName" class="easyui-textbox"></div>
+			<div class="fitem"><label>Status&nbsp</label><input id="status" name="status" class="easyui-textbox"></div>
+			<input type="hidden" id="oldID" name="oldID" class="easyui-textbox" hidden="true" style="display:none;"/>
+			
+				<input type="radio" name="action" id="unchanged" value="UNCHANGED" style="display:none;" checked>
+				<input type="radio" name="action"  id="new" value="INSERT" style="display:none;">
+				<input type="radio" name="action" id="update" value="UPDATE" style="display:none;">
+				<input type="radio" name="action"  id="remove" value="DELETE" style="display:none;">
+				
+		</form>
+	</div>
+	
+	<div id="pgn"class="easyui-pagination" style="background:#5dd9ff;border:0px solid #ccc;width:980px;" data-options="
+                    layout:['sep','first','prev','sep','links','sep','next','last','sep','refresh']"></div>
+				  
+	<form id="fmh" name="fmh" method="get" action="../read">
+	<input id="pagenum" name="pageNum" type="hidden" readonly/>
+	<!-- <input id="pageSize" name="pageSize" type="hidden" readonly/>-->
+	 </form>
+	 	
+	    <div id="dlg-buttons">
+		<a href="javascript:void(0)" class="easyui-linkbutton c6" iconCls="icon-ok" onclick="sendToSave();javascript:$('#dlg').dialog('close')" style="width:90px">Save</a>
+		<!-- Note the onclick action in the above function -->
+		<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlg').dialog('close');cancel();" style="width:90px">Cancel</a>
+	</div>
+	
+	<div id="dlg-cnf" class="easyui-dialog" style="width:280px;height:120px;padding:10px 20px"
+			closed="true" buttons="#dlg-cnf-buttons">
+			Remove this record ?
+	</div>
+    <div id="dlg-cnf-buttons">
+		<a href="javascript:void(0)" class="easyui-linkbutton c6" iconCls="icon-ok" onclick="removeUser()" style="width:90px">Yes</a>
+		<!-- Note the onclick action in the above function -->
+		<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlg-cnf').dialog('close');cancel();" style="width:90px">No</a>
+	</div>
+     <div id="w" class="easyui-window" title="" data-options="resizable:false,maximizable:false,minimizable:false,collapsible:false,closable:false,modal:true,closed:true" style="width:47px;height:49px;padding:0px;">
+       <img src="../css/loading.gif">
+            </div>
+ <script type="text/javascript"> <!-- CRUD Interface-->
+	var url;
+
+
+	function cancel()
+	{
+		//alert("cancel");
+		document.getElementById('unchanged').checked = true;
+	}
+	function newUser(){
+		
+		
+		$('#dlg').dialog('open').dialog('setTitle','New Record');
+		$('#fm').form('clear');
+		document.getElementById('new').checked = true;
+	}
+	
+	function editUser(){
+		var row = $('#dg').datagrid('getSelected');
+		
+		if (row){
+			$('#dlg').dialog('open').dialog('setTitle','Update Record');
+			$('#fm').form('load',row);
+			document.getElementById('update').checked = true;
+		}
+		else{
+
+			
+			$.messager.show({
+                title:'Attention !',
+                msg:'Please select a record to update'
+            });
+		}
+	}
+	function removeUser(){
+		var row = $('#dg').datagrid('getSelected');
+		$('#fm').form('load',row);
+	 	document.getElementById('remove').checked = true;
+	 	sendToSave();
+		$('#dlg-cnf').dialog('close');
+		
+	}
+	/*function saveUser(){
+		$('#fm').form('submit',{
+			url: url,
+			onSubmit: function(){
+				return $(this).form('validate');
+			},
+			success: function(result){
+				var result = eval('('+result+')');
+				if (result.errorMsg){
+					$.messager.show({
+						title: 'Error',
+						msg: result.errorMsg
+					});
+				} else {
+					$('#dlg').dialog('close');		// close the dialog
+					$('#dg').datagrid('reload');	// reload the user data
+				}
+			}
+		});
+	}*/
+	function cnfRemove(){
+		var row = $('#dg').datagrid('getSelected');
+		document.getElementById('remove').checked = true;
+		if (row){
+		$('#dlg-cnf').dialog('open').dialog('setTitle','Confirm');
+		
+			
+		}
+		else{
+
+				
+				$.messager.show({
+                    title:'Attention !',
+                    msg:'Please select a record to remove'
+                });
+			}
+		
+	}
+</script>
+
+<script><!--AutoSuggest for first and last name-->
+
+        var myloader = function(param,success,error){
+            var q = param.q || '';
+            if (q.length <= 2){
+            
+            
+            return false;
+            
+            }
+            $.ajax({
+                url: '../read?Src=AutoSuggest&ReqType=name_FS&ReqVal='+$('#name_FS').combobox('getValue'),
+                dataType: 'json',
+                data: {
+                    q: q
+                    
+                },
+                success: function(data){
+                	//alert("in success function 1 with"+data);
+                    var items = $.map(data, function(item,index){
+                        return {
+                            id: item,
+                            name_F: item
+                        };
+                    });
+                    success(items);
+                },
+                error: function(){
+                	alert("in error function 1");
+                    error.apply(this, arguments);
+                }
+            });
+        }
+          var myloader2 = function(param,success,error){
+            var q = param.q || '';
+            if (q.length <= 2){
+            
+            
+            return false;
+            
+            }
+            $.ajax({
+                url: '../read?Src=AutoSuggest&ReqType=name_LS&ReqVal='+$('#name_LS').combobox('getValue'),
+                dataType: 'json',
+                data: {
+                    q: q
+                    
+                },
+                success: function(data){
+                	//alert("in success function 2 with"+data);
+                    var items = $.map(data, function(item,index){
+                        return {
+                            id: item,
+                            name_F: item
+                        };
+                    });
+                    success(items);
+                },
+                error: function(){
+                	alert("in error function 2");
+                    error.apply(this, arguments);
+                }
+            });
+        }
+        
+        
+</script>
+
+<script><!-- Searching -->
+	
+	
+	
+	function checkLen(id)
+	{
+	
+		var t = $('#'+id);
+		var inp=t.textbox('getValue');
+		//alert("in checkLen; ID=" +id +" and length=" +inp.length);
+		if(inp.length<=2 && inp.length>0)
+		{
+			t.textbox('clear');
+			t.textbox({
+   			 
+    					iconCls:'icon-cancel',
+   						prompt:'Enter atleast 3 characters'
+				})
+		}
+		if(inp.length>2)
+		{
+			
+			t.textbox({
+   			  			iconCls:null
+   					 })
+   		
+   				
+		}
+		
+	}
+	function searchrec()
+	{
+		//alert("in Search");
+		$('#dlg_search').panel('open');//open panel via DG search request
+		$('#dlg_search').panel('expand',true);
+		//$('#fm').form('clear');
+	}
+	function searchQ()
+	{
+	
+		//collapse panel upon submission
+		//$('#dlg_search').panel('close');
+		
+	var id=document.getElementById("idS").value;
+	 var UserID=document.getElementById("userIDS").value;
+	 var Name_F=$('#name_FS').combobox('getValue');//because it's an EasyUI combobox
+	 var Name_L=$('#name_LS').combobox('getValue');
+	 var SIP_Loc=document.getElementById("SIP_LocS").value;
+	 var SIP_Unit=document.getElementById("SIP_UnitS").value;
+	 var GroupName=document.getElementById("groupNameS").value;
+	 var Status=document.getElementById("statusS").value;
+		
+	var url = "../read?Src=Search";
+	var params = "id="+id+"&UserID="+UserID+"&Name_F="+Name_F+"&Name_L="+Name_L+"&SIP_Loc="+SIP_Loc+"&SIP_Unit="+SIP_Unit+"&GroupName="+GroupName+"&Status="+Status;
+	alert(params);
+	
+	
+	var xmlHttpRequest = getXMLHttpRequest(); 
+	xmlHttpRequest.open("POST", url, true);
+	
+	xmlHttpRequest.onreadystatechange = getSearchQResponse(xmlHttpRequest);//is already has a getResponse for pagination
+	xmlHttpRequest.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+	xmlHttpRequest.send(params);
+			
+	$('#dlg_search').panel('collapse',true);
+		
+		//$('#fm').form('clear');
+		
+	}
+	
+
+	
+function getSearchQResponse(xmlHttpRequest) {
+
+	// an anonymous function returned
+		// it listens to the XMLHttpRequest instance
+		return function() {
+			if (xmlHttpRequest.readyState == 4) {
+				if (xmlHttpRequest.status == 200) {
+					var data = xmlHttpRequest.responseText;//receives from servlet without redirect
+					var jsonData = JSON.parse(data);//data now holds the whole json as a string and jsonData as the object
+					//alert("in getResponse");		
+					//document.getElementById("Respns").value=data;
+					
+					$('#dg').datagrid('loadData', jsonData);
+										
+					$('#pgn').pagination({
+						total: jsonData.total//pass number of entries to pagination total
+					});
+					$('#w').window('close');//close modal window					
+					
+				} 
+				else {
+					alert("HTTP error " + xmlHttpRequest.status + ": "+ xmlHttpRequest.statusText);
+				}
+			}
+		};
+	}
+
+
+
+</script>
+
+
+
+	
+	
+<script><!-- Pagination with Sort-->
+var pageNum=1;//made pageNum global
+var Sort="";
+var Order="";//so that order.length()=0
+$(document).ready(function()
+	
+	{ 
+	//alert("doc ready");
+	$('#pgn').pagination({
+	pageSize:15,
+	onSelectPage:function(pageNumber, pageSize)//executed when pagination is selected
+	{
+		pageNum=pageNumber;
+		// alert('You Selected Page :'+pageNumber+'\n Exiting this Page...');
+		 initialRequest(pageNum);//send partial "Post" to Servlet
+		// $('#dg').datagrid('loading');
+		
+	}
+});
+
+$('#dg').datagrid({
+				width:'980',
+				height:'476',
+				
+				iconCls:'icon',
+				onSortColumn: function(sort,order)
+				{
+					Sort=sort;
+					Order=order;
+					//alert("sort");
+					//alert("sort is " +Sort+" & order is "+Order);
+					$('#pgn').pagination('select', 1);//show page 1 on pagination
+					initialRequest0();//when a user hits sort, the global variables no have values, hence we need to go to page 1 only once
+					
+				}
+			});
+			
+});
+
+
+function initialRequest0()
+ {
+			var url = "../read";
+			var params = "Src=Pagination&pageNum="+1+"&sort="+Sort+"&order="+Order;//passed to servlet via post - page 1 only
+			var xmlHttpRequest = getXMLHttpRequest(); //The XMLHttpRequest object is used to exchange data with a server.
+			
+			xmlHttpRequest.open("POST", url, true);
+
+	xmlHttpRequest.onreadystatechange = getResponse(xmlHttpRequest, pageNum);
+
+	xmlHttpRequest.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+	xmlHttpRequest.send(params);
+   	$('#w').window('open');//only to hide the datagrid ('loading') part upon first boot
+}
+
+function initialRequest(pageNum) {
+			var url = "../read";
+			var params = "Src=Pagination&pageNum="+pageNum+"&sort="+Sort+"&order="+Order;
+			//alert("Pagenumber is "+pageNumber);
+			var xmlHttpRequest = getXMLHttpRequest(); 
+			xmlHttpRequest.open("POST", url, true);
+
+	xmlHttpRequest.onreadystatechange = getResponse(xmlHttpRequest, pageNum);
+	xmlHttpRequest.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+	xmlHttpRequest.send(params);
+	$('#w').window('open');
+
+}
+/*
+ * Returns a function that waits for the state change in XMLHttpRequest
+ */
+function getResponse(xmlHttpRequest, pageNum) {//why is pageNumber here ??
+
+	// an anonymous function returned
+		// it listens to the XMLHttpRequest instance
+		return function() {
+			if (xmlHttpRequest.readyState == 4) {
+				if (xmlHttpRequest.status == 200) {
+					var data = xmlHttpRequest.responseText;//receives from servlet without redirect
+					var jsonData = JSON.parse(data);//data now holds the whole json as a string and jsonData as the object
+					//$('#dg').datagrid('loaded');
+					$('#w').window('close');//close modal window
+					//alert("data loaded");
+					$('#dg').datagrid('loadData', jsonData);
+										
+					$('#pgn').pagination({
+						total: jsonData.total//pass number of entries to pagination total
+					});
+				} else {
+					alert("HTTP error " + xmlHttpRequest.status + ": "+ xmlHttpRequest.statusText);
+				}
+			}
+		};
+	}
+
+/*
+ * creates a new XMLHttpRequest object which is the backbone of AJAX,
+ * or returns false if the browser doesn't support it
+ */
+ //The XMLHttpRequest object is used to exchange data with a server.
+function getXMLHttpRequest() {
+	var xmlHttpReq = false;
+	// to create XMLHttpRequest object in non-Microsoft browsers
+	if (window.XMLHttpRequest) {
+		xmlHttpReq = new XMLHttpRequest();
+	} else if (window.ActiveXObject) {
+		try {
+			// to create XMLHttpRequest object in later versions
+			// of Internet Explorer
+			xmlHttpReq = new ActiveXObject("Msxml2.XMLHTTP");
+		} catch (exp1) {
+			try {
+				// to create XMLHttpRequest object in older versions
+				// of Internet Explorer
+				xmlHttpReq = new ActiveXObject("Microsoft.XMLHTTP");
+			} catch (exp2) {
+				xmlHttpReq = false;
+			}
+		}
+	}
+	return xmlHttpReq;
+}
+</script>
+
+<script><!--Call Save Servlet-->
+	/*function checkLen2(id)
+	{
+	
+		var t = $('#'+id);
+		var inp=t.textbox('getValue');
+		//alert("in checkLen; ID=" +id +" and length=" +inp.length);
+		if(inp.length<=2 && inp.length>0)
+		{
+			t.textbox('clear');
+			t.textbox({
+   			 
+    					iconCls:'icon-cancel',
+   						prompt:'Enter atleast 3 characters'
+				})
+		}
+		if(inp.length>2)
+		{
+			
+			t.textbox({
+   			  			iconCls:null
+   					 })
+   		
+   				
+		}
+		
+	}*/
+	function getAction()
+	{
+		if(document.getElementById('new').checked == true)
+		{
+			return "INSERT";
+		}
+		if(document.getElementById('update').checked == true)
+		{
+			return "UPDATE";
+		}
+		if(document.getElementById('unchanged').checked == true)
+		{
+			return "UNCHANGED";
+		}
+		if(document.getElementById('remove').checked == true)
+		{
+			return "DELETE";
+		}
+		
+				
+	}
+	function sendToSave()
+	{
+	
+		//collapse panel upon submission
+		//$('#dlg_search').panel('close');
+	//alert("in sendToSave");
+	var id=document.getElementById("id").value;
+	//alert(id);
+	 var UserID=document.getElementById("userID").value;
+	 var Name_F=document.getElementById("name_F").value;//because it's not an EasyUI combobox
+	 var Name_L=document.getElementById("name_L").value;
+	 var SIP_Loc=document.getElementById("SIP_Loc").value;
+	 var SIP_Unit=document.getElementById("SIP_Unit").value;
+	 var GroupName=document.getElementById("groupName").value;
+	 var Status=document.getElementById("status").value;
+	 var oldID=document.getElementById("oldID").value;
+		var Action=getAction();
+		var params = "id="+id+"&userID="+UserID+"&name_F="+Name_F+"&name_L="+Name_L+"&SIP_Loc="+SIP_Loc+"&SIP_Unit="+SIP_Unit+"&groupName="+GroupName+"&status="+Status+"&oldID="+oldID+"&Action="+Action;
+		//alert(params);
+		//alert(Action);
+	
+	
+	
+	var url = "../read?Src=SaveToDB";
+	
+	
+	
+	var xmlHttpRequest = getXMLHttpRequest(); 
+	xmlHttpRequest.open("POST", url, true);
+	
+	xmlHttpRequest.onreadystatechange = getSaveResponse(xmlHttpRequest);//is already has a getResponse for pagination
+	xmlHttpRequest.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+	xmlHttpRequest.send(params);
+			$('#w').window('open');
+	//$('#dlg_search').panel('collapse',true);
+		
+		//$('#fm').form('clear');
+		
+	}
+	
+
+	
+function getSaveResponse(xmlHttpRequest) {
+
+	// an anonymous function returned
+		// it listens to the XMLHttpRequest instance
+		return function() {
+			if (xmlHttpRequest.readyState == 4) {
+				if (xmlHttpRequest.status == 200) {
+					var data = xmlHttpRequest.responseText;//receives from servlet without redirect
+					//var jsonData = JSON.parse(data);//data now holds the whole json as a string and jsonData as the object
+					
+					$('#dg').datagrid('reload');
+					alert(data);		
+					//document.getElementById("Respns").value=data;
+					
+					
+					
+					$('#w').window('close');
+					//$('#dg').datagrid('loadData', jsonData);
+										
+				//	$('#pgn').pagination({
+					//	total: jsonData.total//pass number of entries to pagination total
+					//});
+					//$('#w').window('close');//close modal window					
+					
+				} 
+				else {
+					alert("HTTP error " + xmlHttpRequest.status + ": "+ xmlHttpRequest.statusText);
+				}
+			}
+		};
+	}
+	
+
+</script>
+
+ </body>
+</html>
+
+
