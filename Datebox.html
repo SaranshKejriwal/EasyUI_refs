@@ -1,0 +1,162 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>DateBox</title>
+    <link rel="stylesheet" type="text/css" href="../css/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../css/icon.css">
+   
+    <script type="text/javascript" src="../js/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/jquery.easyui.min.js"></script>
+</head>
+<body>
+    <div style="margin:20px 0;"></div>
+    From:&nbsp;<input id="dbF"class="easyui-datebox"></input><br><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;To:&nbsp;<input id="dbT"class="easyui-datebox"></input><br>
+    
+    <script>
+    
+    var fromDate=null;
+    var toDate=null;
+    
+    $(document).ready(function(){
+    
+   $('#dbF').datebox({
+	onSelect: function(dateF)
+	{
+		//alert("From:"+dateF.getFullYear()+":"+(dateF.getMonth()+1)+":"+dateF.getDate());
+		
+		fromDate=dateF;
+		dates(fromDate,toDate);
+		
+		$('#dbT').datebox().datebox('calendar').calendar({
+                validator: function(dateT){
+                  
+                    if(dateT<dateF)
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                    	return true;
+                    }
+                    
+                }
+            });
+            return dateF;
+		
+	}
+	});
+    $('#dbT').datebox({
+	onSelect: function(dateT)
+	{
+		//alert("To:"+dateT.getFullYear()+":"+(dateT.getMonth()+1)+":"+dateT.getDate());
+		
+		toDate=dateT;
+		dates(fromDate,toDate);
+		
+		$('#dbF').datebox().datebox('calendar').calendar({
+                validator: function(dateF){
+                  
+                    if(dateF>dateT)
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                    	return true;
+                    }
+                    
+                }
+            });
+		
+	}
+	});
+    
+    
+    });
+    
+   /*  $(function(){
+     	//$('dbT').datebox('cloneFrom', '#dbF');
+            
+        });*/
+        
+        function dates(fromDate,toDate)
+        {
+        
+        	if(fromDate!=null && toDate!=null)
+        	{
+        		alert("dates>> From:"+fromDate.getDate()+"/"+(fromDate.getMonth()+1)+"/"+fromDate.getFullYear()+">>>To:"+toDate.getDate()+"/"+(toDate.getMonth()+1)+"/"+toDate.getFullYear());
+        		//alert("To:"+fromDate.getFullYear()+":"+(fromDate.getMonth()+1)+":"+fromDate.getDate());
+        		//alert("To:"+toDate.getFullYear()+":"+(toDate.getMonth()+1)+":"+toDate.getDate());
+        		
+        		var url = "../dummy?Src=DateBox";
+				var params = "dateF="+fromDate.getDate()+"&monthF="+(fromDate.getMonth()+1)+"&yearF="+fromDate.getFullYear()+"&dateT="+toDate.getDate()+"&monthT="+(toDate.getMonth()+1)+"&yearT="+toDate.getFullYear();
+				//alert(params);
+				var xmlHttpRequest = getXMLHttpRequest(); 
+				xmlHttpRequest.open("POST", url, true);
+	
+				xmlHttpRequest.onreadystatechange = getDateResponse(xmlHttpRequest);
+				xmlHttpRequest.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+					xmlHttpRequest.send(params);
+        		
+        		
+        	}
+        	
+        	
+        	
+        }
+        
+        function getDateResponse(xmlHttpRequest) {
+
+	// an anonymous function returned
+		// it listens to the XMLHttpRequest instance
+		return function() {
+			if (xmlHttpRequest.readyState == 4) {
+				if (xmlHttpRequest.status == 200) {
+					var data = xmlHttpRequest.responseText;//receives from servlet without redirect
+					//var jsonData = JSON.parse(data);//data now holds the whole json as a string and jsonData as the object
+					//alert(data);		
+					//document.getElementById("Respns").value=data;
+					alert("Dates on Servlet");
+										
+					
+				} 
+				else {
+					alert("HTTP error " + xmlHttpRequest.status + ": "+ xmlHttpRequest.statusText);
+				}
+			}
+		};
+	}
+        
+        
+     function getXMLHttpRequest() {
+	var xmlHttpReq = false;
+	// to create XMLHttpRequest object in non-Microsoft browsers
+	if (window.XMLHttpRequest) {
+		xmlHttpReq = new XMLHttpRequest();
+	} else if (window.ActiveXObject) {
+		try {
+			// to create XMLHttpRequest object in later versions
+			// of Internet Explorer
+			xmlHttpReq = new ActiveXObject("Msxml2.XMLHTTP");
+		} catch (exp1) {
+			try {
+				// to create XMLHttpRequest object in older versions
+				// of Internet Explorer
+				xmlHttpReq = new ActiveXObject("Microsoft.XMLHTTP");
+			} catch (exp2) {
+				xmlHttpReq = false;
+			}
+		}
+	}
+	return xmlHttpReq;
+}
+        
+    </script>
+</body>
+</html>
+
+
+
